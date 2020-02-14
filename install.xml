@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>google sheets import/export</name>
+    <code>google sheets_import_export</code>
+    <version>1.0</version>
+    <author>info@web-systems.solutions</author>
+    <link>https://web-systems.solution</link>
+    <file path="admin/controller/startup/permission.php">
+
+        <operation>
+            <search><![CDATA[$ignore = array(]]></search>
+            <add position="before"><![CDATA[
+                if (isset($part[3]) && in_array($route, ['extension/module/google_sheets'])) {
+			    	$route .= '/' . $part[3];
+			    }
+            ]]></add>
+        </operation>
+
+    </file>
+</modification>
