@@ -11,10 +11,7 @@ class ControllerExtensionModuleGoogleSheetsClient extends Controller
     {
         parent::__construct($registry);
 
-        $this->clientLoginUrl = $this->url->link('extension/module/google_sheets/client/getClientLogin', 'user_token=' . $this->session->data['user_token'], true);
-
         require_once DIR_SYSTEM . '/library/google_sheets/vendor/autoload.php';
-
 
         $this->client = $this->initClientApi();
         if ($this->client) {
@@ -145,13 +142,6 @@ class ControllerExtensionModuleGoogleSheetsClient extends Controller
     public function getClient()
     {
 
-        if ($this->client->isAccessTokenExpired()) {
-            if ($this->client->getRefreshToken()) {
-                $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
-            } else {
-                return null;
-            }
-        }
         return $this->client;
     }
 
@@ -166,88 +156,19 @@ class ControllerExtensionModuleGoogleSheetsClient extends Controller
 
     private function initClientApi()
     {
-
-        $client = new Google_Client();
-        $client->setApplicationName('Google Sheets API PHP');
-
-        $client->setClientId($this->config->get('google_sheets_setting_ClientId'));
-        $client->setClientSecret($this->config->get('google_sheets_setting_ClientSecret'));
-
-        $client->setRedirectUri($this->clientLoginUrl);
-        $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
-
-        $client->setScopes([Google_Service_Sheets::DRIVE, Google_Service_Sheets::DRIVE_FILE, Google_Service_Sheets::SPREADSHEETS_READONLY]);
-
-
+        // configure the Google Client
+        $client = new \Google_Client();
+        $client->setApplicationName('Google Sheets API');
+        $client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
         $client->setAccessType('offline');
-        $client->setPrompt('select_account consent');
 
-
-        $tokenPath = $this->tokenPath;
-        if (file_exists($tokenPath)) {
-            $accessToken = json_decode(file_get_contents($tokenPath), true);
-            $client->setAccessToken($accessToken);
-
-            // Save the token to a file.
-            file_put_contents($tokenPath, json_encode($client->getAccessToken()));
+        if ( file_exists( $this->tokenPath ) ) {
+            $client->setAuthConfig($this->tokenPath);
         }
 
         return $client;
     }
 
-
-    function getClientLogin()
-    {
-        error_reporting(0);
-
-        $this->load->language('extension/module/google_sheets/setting');
-        $client = $this->client;
-        $tokenPath = $this->tokenPath;
-
-        // If there is no previous token or it's expired.
-        if ($client->isAccessTokenExpired()) {
-            // Refresh the token if possible, else fetch a new one.
-            if ($client->getRefreshToken()) {
-                $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-            } else {
-                // Request authorization from the user.
-                $authUrl = $client->createAuthUrl();
-
-                echo '<a target="_blank" href="' . $authUrl . '">' . $this->language->get('login_auth_text') . '</a>';
-
-                echo '<form action="' . $this->clientLoginUrl . '" method="post">';
-                echo '<input name="code">';
-                echo '<button>Send</button>';
-                echo '</form>';
-
-                $authCode = @$_REQUEST['code'];
-
-                if ($authCode) {
-
-                    // Exchange authorization code for an access token.
-                    $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
-                    $client->setAccessToken($accessToken);
-
-                    // Check to see if there was an error.
-                    if (array_key_exists('error', $accessToken)) {
-//                    throw new Exception(join(', ', $accessToken));
-                    }
-
-                    // Save the token to a file.
-                    if (!file_exists(dirname($tokenPath))) {
-                        mkdir(dirname($tokenPath), 0700, true);
-                    }
-                    file_put_contents($tokenPath, json_encode($client->getAccessToken()));
-
-                    echo '<script>window.close();</script>';
-
-                } else {
-
-                }
-            }
-        }
-        return $client;
-    }
 
 
 }

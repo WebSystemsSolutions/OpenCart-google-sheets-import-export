@@ -18,14 +18,15 @@ $_['text_tab_instruction'] = 'Instruction';
 
 
 $_['instruction_step_1'] = 'Go to the API page on the "Credentials" tab';
-$_['instruction_step_2'] = 'Click on "+ Create credentials" and select - OAuth Client ID  ';
-$_['instruction_step_3'] = 'Create OAuth client ID (select Application type - Other types) ';
-$_['instruction_step_4'] = 'Copy "ClientId" and "ClientSecret" to the module settings ';
-$_['instruction_step_5'] = 'Copy to the settings of the module "sheet id" - this is the Google ID of the table ';
-$_['instruction_step_6'] = 'Save the module ';
-$_['instruction_step_7'] = 'Click on the authorization link (To work through api google sheets you need to log in) ';
-$_['instruction_step_8'] = 'Enter the code in the new window that appears';
-$_['instruction_step_9'] = 'Save the module';
+$_['instruction_step_2'] = 'Select this project';
+$_['instruction_step_3'] = 'Click on <code>Library</code>, search for <code>Sheets API</code>, enable the service:';
+$_['instruction_step_4'] = 'Click <code>Credentials</code> and click <code>Create Credentials</code> select <code>Service Account</code>, fill in the details';
+$_['instruction_step_5'] = 'Go to this account and add a new key (json)';
+$_['instruction_step_6'] = 'Save the key to the module';
+$_['instruction_step_7'] = 'Add your Google Spreadsheet Id. Save the module.';
+$_['instruction_step_8'] = 'Click the <code> Details </code> tab of your <code> Service Account </code> and copy the <code> Email </code>';
+$_['instruction_step_9'] = 'Add this email to the list of users who can edit the spreadsheet or share it with everyone';
+$_['instruction_step_10'] = 'Save the module. Enjoy)';
 
 $_['entry_export_danger'] = 'The data in the table will be overwritten';
 
@@ -36,7 +37,7 @@ $_['entry_update_field'] = 'Update products in the field';
 $_['entry_attribute_group_import'] = 'In which group to add new attributes';
 
 
-$_['text_login'] = 'To work through api google sheets you need to log in';
+$_['text_login'] = 'To work through api google sheets you need upload File Credentials (.json). Go to tab Instruction';
 $_['text_count_step'] = 'The number of exports of goods in one step';
 
 $_['login_auth_text'] = 'Follow the link first, log in, get the code, enter it here, save, then save the module';
@@ -50,6 +51,6 @@ $_['error_language_code'] = 'Not the correct language of import!';
 $_['error_field_update'] = 'No update column found! -';
 $_['error_document_title'] = 'No document title found';
 
-$_['error_sheets_connect'] = 'Not a valid ClientId, ClientSecret or sheet id!';
+$_['error_sheets_connect'] = 'Not a valid File Credentials or Spreadsheet Id!';
 $_['error_api_login'] = 'Not a valid Clientid, Clientsecret or shet id!';
 $_['error_permission'] = 'You do not have the right to change the module !!';

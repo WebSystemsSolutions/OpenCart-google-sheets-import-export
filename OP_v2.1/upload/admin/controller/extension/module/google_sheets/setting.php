@@ -20,6 +20,10 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
             $this->model_setting_setting->editSetting($this->settingKey, $this->request->post);
 
+            if (!empty($this->request->files[$this->settingKey . '_FileCredentials']['name']) && is_file($this->request->files[$this->settingKey . '_FileCredentials']['tmp_name'])) {
+                move_uploaded_file($this->request->files[$this->settingKey . '_FileCredentials']['tmp_name'], __DIR__ . '/credentials/token.json' );
+            }
+
             $this->session->data['success'] = $this->language->get('text_success');
 
             $this->response->redirect($this->url->link('extension/module/google_sheets/setting', 'token=' . $this->session->data['token'], 'SSL'));
@@ -98,7 +102,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
 
         try {
             if (!$sheetsClient->getClient()) {
-                $data['login_url'] = $this->url->link('extension/module/google_sheets/client/getClientLogin', 'token=' . $this->session->data['token'], 'SSL');
+                $data['login_url'] = 'javascript:void(0);';
 
                 $this->error['warning'] = $this->language->get('error_api_login');
             }
@@ -109,24 +113,24 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
             $this->error['warning'] = $this->language->get('error_sheets_connect');
         }
 
-        $data['fields'][$this->settingKey . '_ClientId'] = [
-            'label' => 'ClientId',
-            'type'  => 'input',
-            'value' => $this->config->get($this->settingKey . '_ClientId'),
-        ];
+        if (file_exists(__DIR__ . '/credentials/token.json')) {
+            $file_uploaded = true;
+        } else {
+            $file_uploaded = false;
+        }
 
-        $data['fields'][$this->settingKey . '_ClientSecret'] = [
-            'label' => 'ClientSecret',
-            'type'  => 'input',
-            'value' => $this->config->get($this->settingKey . '_ClientSecret'),
+        $data['fields'][$this->settingKey . '_FileCredentials'] = [
+            'label' => 'File Credentials',
+            'type'  => 'file',
+            'file_uploaded'  => $file_uploaded,
+            'value' => '',
         ];
 
         $data['fields'][$this->settingKey . '_sheet_id'] = [
-            'label' => 'sheet id',
+            'label' => 'Spreadsheet Id',
             'type'  => 'input',
             'value' => $this->config->get($this->settingKey . '_sheet_id'),
         ];
-
 
         $data['fields'][$this->settingKey . '_count_step'] = [
             'label' => $this->language->get('text_count_step'),
@@ -148,7 +152,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[product_id]',
             'name_column'   => '_ID_',
-            'label'         => 'ID товара',
+            'label'         => 'ID товару',
             'disabled'      => true,
             'checked'       => true,
             'table'         => 'product',
@@ -159,7 +163,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[lang]',
             'name_column' => '_LANG_',
-            'label'       => 'Язык',
+            'label'       => 'Мова',
             'disabled'    => true,
             'checked'     => true,
             'table'       => 'lang',
@@ -168,7 +172,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[categories]',
             'name_column' => '_CATEGORIES_',
-            'label'       => 'Категории',
+            'label'       => 'Категорії',
             'disabled'    => true,
             'checked'     => true,
             'table'       => 'categories',
@@ -177,7 +181,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[name]',
             'name_column'   => '_NAME_',
-            'label'         => 'Наименование',
+            'label'         => 'Назва',
             'disabled'      => true,
             'checked'       => true,
             'table'         => 'description',
@@ -207,7 +211,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[ean]',
             'name_column'   => '_EAN_',
-            'label'         => 'Европейский артикул',
+            'label'         => 'Європейський артикул',
             'disabled'      => false,
             'checked'       => isset($parser_fields['ean']),
             'table'         => 'product',
@@ -217,7 +221,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[jan]',
             'name_column'   => '_JAN_',
-            'label'         => 'Японский артикул ',
+            'label'         => 'Японський артикул ',
             'disabled'      => false,
             'checked'       => isset($parser_fields['jan']),
             'table'         => 'product',
@@ -227,7 +231,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[isbn]',
             'name_column'   => '_ISBN_',
-            'label'         => 'Международный стандарт номера книги',
+            'label'         => 'Міжнародний стандарт номера книги',
             'disabled'      => false,
             'checked'       => isset($parser_fields['isbn']),
             'table'         => 'product',
@@ -237,7 +241,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[mpn]',
             'name_column'   => '_MPN_',
-            'label'         => 'Номер производителя',
+            'label'         => 'Номер виробника',
             'disabled'      => false,
             'checked'       => isset($parser_fields['mpn']),
             'table'         => 'product',
@@ -257,7 +261,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[manufacturer]',
             'name_column' => '_MANUFACTURER_',
-            'label'       => 'Производитель',
+            'label'       => 'Виробник',
             'disabled'    => false,
             'checked'     => isset($parser_fields['manufacturer']),
             'table'       => 'manufacturer',
@@ -266,7 +270,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[location]',
             'name_column'   => '_LOCATION_',
-            'label'         => 'Расположение',
+            'label'         => 'location',
             'disabled'      => false,
             'checked'       => isset($parser_fields['location']),
             'table'         => 'product',
@@ -276,7 +280,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[price]',
             'name_column'   => '_PRICE_',
-            'label'         => 'Цена',
+            'label'         => 'Ціна',
             'disabled'      => false,
             'checked'       => isset($parser_fields['price']),
             'table'         => 'product',
@@ -287,7 +291,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[quantity]',
             'name_column'   => '_QUANTITY_',
-            'label'         => 'Количество',
+            'label'         => 'Кількість',
             'disabled'      => false,
             'checked'       => isset($parser_fields['quantity']),
             'table'         => 'product',
@@ -308,7 +312,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[meta_title]',
             'name_column'   => '_META_TITLE_',
-            'label'         => 'Meta-тег Title',
+            'label'         => 'Meta-тег title',
             'disabled'      => false,
             'checked'       => isset($parser_fields['meta_title']),
             'table'         => 'description',
@@ -318,7 +322,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[meta_keywords]',
             'name_column'   => '_META_KEYWORDS_',
-            'label'         => 'Мета-тег Keywords',
+            'label'         => 'Мета-тег keywords',
             'disabled'      => false,
             'checked'       => isset($parser_fields['meta_keywords']),
             'table'         => 'description',
@@ -328,7 +332,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[meta_description]',
             'name_column'   => '_META_DESCRIPTION_',
-            'label'         => 'Мета-тег Description',
+            'label'         => 'Мета-тег description',
             'disabled'      => false,
             'checked'       => isset($parser_fields['meta_description']),
             'table'         => 'description',
@@ -338,7 +342,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[description]',
             'name_column'   => '_DESCRIPTION_',
-            'label'         => 'Текст с описанием',
+            'label'         => 'Опис',
             'disabled'      => false,
             'checked'       => isset($parser_fields['description']),
             'table'         => 'description',
@@ -348,7 +352,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'          => $this->settingKey . '_parser_fields[image]',
             'name_column'   => '_IMAGE_',
-            'label'         => 'Изображение',
+            'label'         => 'Зображення',
             'disabled'      => false,
             'checked'       => isset($parser_fields['image']),
             'table'         => 'product',
@@ -358,7 +362,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[images]',
             'name_column' => '_IMAGES_',
-            'label'       => 'Доп. изображения',
+            'label'       => 'Дод. зображення',
             'disabled'    => false,
             'checked'     => isset($parser_fields['images']),
             'table'       => 'images',
@@ -378,7 +382,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[attributes]',
             'name_column' => '_ATTRIBUTES_',
-            'label'       => 'Атрибуты',
+            'label'       => 'Атрибути',
             'disabled'    => false,
             'checked'     => isset($parser_fields['attributes']),
             'table'       => 'attributes',
@@ -387,7 +391,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[discount]',
             'name_column' => '_DISCOUNT_',
-            'label'       => 'Скидки',
+            'label'       => 'Знижки',
             'disabled'    => false,
             'checked'     => isset($parser_fields['discount']),
             'table'       => 'discounts',
@@ -395,7 +399,7 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $fields[] = [
             'name'        => $this->settingKey . '_parser_fields[special]',
             'name_column' => '_SPECIAL_',
-            'label'       => 'Акции',
+            'label'       => 'Акції',
             'disabled'    => false,
             'checked'     => isset($parser_fields['special']),
             'table'       => 'specials',
@@ -440,7 +444,10 @@ class ControllerExtensionModuleGoogleSheetsSetting extends Controller
         $data['entry_status'] = $this->language->get('entry_status');
 
         for ($i = 1; $i < 10; $i++) {
-            $data['instruction_steps'][] = $this->language->get('instruction_step_' . $i);
+            $data['instruction_steps'][] = [
+                'text' => $this->language->get('instruction_step_' . $i),
+                'screen' => file_exists(__DIR__ . "/screens/{$i}.png") ? HTTPS_SERVER . "/controller/extension/module/google_sheets/screens/{$i}.png" : ''
+            ];
         }
 
 

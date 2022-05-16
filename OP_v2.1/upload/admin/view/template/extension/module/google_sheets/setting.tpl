@@ -74,14 +74,17 @@
 
             <div class="tab-pane" id="tab-instruction">
 
-              <div class="alert alert-success">
-                <a href="https://console.developers.google.com/apis/credentials">https://console.developers.google.com/apis/credentials</a>
-              </div>
+                <div class="alert alert-success">
+                    <a href="https://console.cloud.google.com/">https://console.cloud.google.com/</a>
+                </div>
                 <?php foreach ($instruction_steps as $step) { ?>
                   <div class="alert alert-info">
-                      <?= $step; ?>
+                      <?= $step['text']; ?>
                   </div>
-                <?php } ?>
+              <?php if ($step['screen']){ ?>
+              <img src="<?= $step['screen']; ?>" style="width: auto; height: auto;" alt="">
+              <?php } ?>
+              <?php } ?>
             </div>
           </div>
         </form>
